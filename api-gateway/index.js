@@ -1,48 +1,42 @@
-// index.js (api-gateway)
+// api-gateway/index.js
 
 const express = require('express');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const cors = require('cors');
 
 const app = express();
-const port = 8000; // Ini adalah Pintu Gerbang Utama Anda
+const port = 8000;
 
-// Izinkan CORS
 app.use(cors());
 
-// ---- Konfigurasi Rute Proxy ----
-// Kita akan membuat aturan:
-// Permintaan ke /api/users/... akan diteruskan ke user-service (3002)
-// Permintaan ke /api/courses/... akan diteruskan ke course-service (3001)
-// Permintaan ke /api/enrollments/... akan diteruskan ke enrollment-service (3003)
-
-// 1. Proxy untuk User Service (Login & Register)
+// 1. Proxy untuk User Service (Ini sudah benar)
 app.use('/api/users', createProxyMiddleware({
-  target: 'http://localhost:3002', // Alamat user-service
+  target: 'http://localhost:3002',
   changeOrigin: true,
   pathRewrite: {
-    '^/api/users': '', // Hapus /api/users dari URL sebelum meneruskan
-    // Contoh: /api/users/login -> /login
+    '^/api/users': '',
   },
 }));
 
-// 2. Proxy untuk Course Service (Daftar Kursus)
+// 2. Proxy untuk Course Service (INI ADALAH PERBAIKANNYA)
 app.use('/api/courses', createProxyMiddleware({
-  target: 'http://localhost:3001', // Alamat course-service
+  // ▼▼▼ PERUBAHAN DI SINI ▼▼▼
+  target: 'http://localhost:3001/courses', // Pindahkan /courses ke target
   changeOrigin: true,
   pathRewrite: {
-    '^/api/courses': '', // Hapus /api/courses
-    // Contoh: /api/courses/1 -> /courses/1
+    '^/api/courses': '', // Hapus /api/courses menjadi string kosong
+    // Alur baru:
+    // GET /api/courses -> target ('.../courses') + path ('') = ...:3001/courses
+    // GET /api/courses/2 -> target ('.../courses') + path ('/2') = ...:3001/courses/2
   },
 }));
 
-// 3. Proxy untuk Enrollment Service (Enroll & My Courses)
+// 3. Proxy untuk Enrollment Service (Ini sudah benar)
 app.use('/api/enrollments', createProxyMiddleware({
-  target: 'http://localhost:3003', // Alamat enrollment-service
+  target: 'http://localhost:3003',
   changeOrigin: true,
   pathRewrite: {
-    '^/api/enrollments': '', // Hapus /api/enrollments
-    // Contoh: /api/enrollments/enroll -> /enroll
+    '^/api/enrollments': '',
   },
 }));
 

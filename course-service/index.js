@@ -1,58 +1,42 @@
-// index.js (course-service)
+// course-service/index.js
 
 const express = require('express');
-const cors = require('cors');
-const db = require('./db.js'); // Impor koneksi database
+const cors = require('cors'); // <-- Nyalakan lagi
+const db = require('./db.js');
 
 const app = express();
-const port = 3001; // Port untuk service kursus
+const port = 3001;
 
-// Gunakan CORS agar React bisa mengakses API ini
+// Nyalakan lagi middleware ini
 app.use(cors());
-
-// Middleware untuk parse JSON
 app.use(express.json());
 
 
-// ===== API ENDPOINT UNTUK KURSUS =====
-
 // [GET] /courses
-// Tugas: Mengambil semua data dari tabel 'courses'
 app.get('/courses', (req, res) => {
   const sql = "SELECT * FROM courses";
-  
   db.query(sql, (err, results) => {
     if (err) {
       console.error("Error querying database:", err);
-      res.status(500).json({ error: "Internal server error" });
-      return;
+      return res.status(500).json({ error: "Internal server error" });
     }
-    
-    // Jika berhasil, kirim data kursus sebagai JSON
     res.status(200).json(results);
   });
 });
 
 // [GET] /courses/:id
-// Tugas: Mengambil SATU kursus berdasarkan ID-nya
-// (Dibutuhkan oleh Enrollment Service)
 app.get('/courses/:id', (req, res) => {
-  const courseId = req.params.id; // Ambil ID dari URL
+  const courseId = req.params.id;
   const sql = "SELECT * FROM courses WHERE course_id = ?";
   
   db.query(sql, [courseId], (err, results) => {
     if (err) {
       console.error("Error querying database:", err);
-      res.status(500).json({ error: "Internal server error" });
-      return;
+      return res.status(500).json({ error: "Internal server error" });
     }
-    
     if (results.length === 0) {
-      res.status(404).json({ error: "Course not found" });
-      return;
+      return res.status(404).json({ error: "Course not found" });
     }
-
-    // Kirim data kursus (hanya 1 baris)
     res.status(200).json(results[0]); 
   });
 });
